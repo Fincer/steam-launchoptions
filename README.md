@@ -68,6 +68,10 @@ When the script asks you to type launch options, just leave it pure blank. The s
 
 You can clear & customize launch options for single/multiple/all games, depending on your further choises.
 
+## Images
+
+![](images/samplerun.png)
+
 ### LICENSE
 
 This repository uses GPLv3 license. See [LICENSE](LICENSE) for details.
