@@ -54,6 +54,51 @@ fi
 
 ###########################################################
 
+# Find file localconfig.vdf
+LOCALCONF_FIND=$(find ${STEAMPATH}/userdata/*/config -type f -name "localconfig.vdf")
+
+i=0
+for conf in ${LOCALCONF_FIND[@]}; do
+  confs[$i]=${conf}
+  let i++
+done
+
+if [[ ${#confs[*]} -ne 1 ]]; then
+  echo -e "\n\e[1mWarning:\e[0m Multiple Steam account configuration files 'localconfig.vdf' found. Please select which one to update:\n"
+
+  i=0
+  for k in ${confs[*]}; do
+    conf_id=$(printf '%s' ${confs[$i]} | sed -r 's/^.*userdata\/(.*)\/config.*/\1/')
+    conf_user=$(grep -r "\"PersonaName\"" ${confs[$i]} | awk '{print $NF}' | sed 's/\"//g')
+    echo -e "$(( ${i} + 1 ))) ${conf_user} (ID: ${conf_id})"
+    let i++
+  done
+
+  echo ""
+
+  read -r -p "Selection: " -i "1" -e conf_select
+
+  if [[ ${conf_select} =~ ^[0-9]+$ ]]; then
+    conf_input=${confs[$(( ${conf_select} - 1 ))]}
+  else
+    echo -e "\e[1mError:\e[0m Number expected. Aborting.\n"
+    exit 1
+  fi
+
+  if [[ -n ${conf_input} ]]; then
+    LOCALCONF=${conf_input}
+    echo -e "Selecting configuration ${conf_select}\n"
+  else
+    echo -e "\e[1mError:\e[0m Valid configuration file could not be determined. Aborting.\n"
+    exit 1
+  fi
+
+else
+  LOCALCONF=${confs}
+fi
+
+###########################################################
+
 INFO_SEP
 
 echo -e "\n\e[1mSteam Platform Target\e[0m\nPlease determine your target platform for Steam games launch option changes.\n\nValid options are\n\n1) ${DEFAULT_PLATFORM}\n2) ${SECOND_PLATFORM}\n"
@@ -165,7 +210,7 @@ for game_idfile in ${valid_games[@]}; do
 done
 cd ${workdir}
 
-echo -e "Found local ${PLATFORM} games:\n\n$(i=0; for k in ${valid_games[*]}; do echo -e "$(( ${i} + 1))) ${k} (AppID: ${games_appids[$i]})"; let i++; done)\n\n"
+echo -e "Found local ${PLATFORM} games:\n\n$(i=0; for k in ${valid_games[*]}; do echo -e "$(( ${i} + 1 ))) ${k} (AppID: ${games_appids[$i]})"; let i++; done)\n\n"
 
 ###########################################################
 
@@ -227,11 +272,6 @@ if [[ -v gamelist ]]; then
   echo -e "\nSelected games:\n$(for g in ${gamelist_names[*]}; do echo -e "- ${g}"; done)\n"
 
 fi
-
-###########################################################
-
-# Find file localconfig.vdf
-LOCALCONF=$(find ${STEAMPATH}/userdata/*/config -type f -name "localconfig.vdf")
 
 ###########################################################
 
